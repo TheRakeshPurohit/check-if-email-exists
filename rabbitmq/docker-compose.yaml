@@ -1,5 +1,3 @@
-# Same as docker-compose.yaml but with the backend image version set to build
-# from the local Dockerfile. This is useful for development purposes.
 version: "3.8"
 
 services:
@@ -23,14 +21,10 @@ services:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
             POSTGRES_DB: reacher_db
-        volumes:
-            - ./backend/postgres_data:/var/lib/postgresql/data
         restart: always
 
     worker1:
-        build:
-            context: .
-            dockerfile: backend/Dockerfile
+        image: reacherhq/backend:beta
         container_name: worker1
         ports:
             - "8080:8080"
@@ -43,12 +37,11 @@ services:
             RCH__WORKER__ENABLE: true
             RCH__WORKER__RABBITMQ__URL: amqp://guest:guest@rabbitmq:5672
             RCH__STORAGE__POSTGRES__DB_URL: postgres://postgres:postgres@postgres:5432/reacher_db
+            RCH__WORKER__THROTTLE__MAX_REQUESTS_PER_DAY: 10000 # Recommended limit per IP per day for SMTP requests
         restart: always
 
     worker2:
-        build:
-            context: .
-            dockerfile: backend/Dockerfile
+        image: reacherhq/backend:beta
         container_name: worker2
         ports:
             - "8081:8080"
@@ -61,4 +54,5 @@ services:
             RCH__WORKER__ENABLE: true
             RCH__WORKER__RABBITMQ__URL: amqp://guest:guest@rabbitmq:5672
             RCH__STORAGE__POSTGRES__DB_URL: postgres://postgres:postgres@postgres:5432/reacher_db
+            RCH__WORKER__THROTTLE__MAX_REQUESTS_PER_DAY: 10000 # Recommended limit per IP per day for SMTP requests
         restart: always
